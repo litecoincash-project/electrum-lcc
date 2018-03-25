@@ -35,8 +35,8 @@ import PyQt5.QtCore as QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 
-from electrum_ltc.i18n import _
-from electrum_ltc import ELECTRUM_VERSION, bitcoin, constants
+from electrum_lcc.i18n import _
+from electrum_lcc import ELECTRUM_VERSION, bitcoin, constants
 
 from .util import MessageBoxMixin
 
@@ -53,7 +53,7 @@ issue_template = """<h2>Traceback</h2>
   <li>Locale: {locale}</li>
 </ul>
 """
-report_server = "https://crashhub.electrum-ltc.org/crash"
+report_server = "https://crashhub.electrum-lcc.org/crash"
 
 
 class Exception_Window(QWidget, MessageBoxMixin):
@@ -63,7 +63,7 @@ class Exception_Window(QWidget, MessageBoxMixin):
         self.exc_args = (exctype, value, tb)
         self.main_window = main_window
         QWidget.__init__(self)
-        self.setWindowTitle('Electrum-LTC - ' + _('An Error Occured'))
+        self.setWindowTitle('Electrum-LCC - ' + _('An Error Occured'))
         self.setMinimumSize(600, 300)
 
         main_box = QVBoxLayout()

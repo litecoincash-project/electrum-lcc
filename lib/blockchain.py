@@ -30,12 +30,18 @@ from .bitcoin import *
 
 try:
     import scrypt
-    getPoWHash = lambda x: scrypt.hash(x, x, N=1024, r=1, p=1, buflen=32)
+    scrypt_pow_hash = lambda x: scrypt.hash(x, x, N=1024, r=1, p=1, buflen=32)
 except ImportError:
     util.print_msg("Warning: package scrypt not available; synchronization could be very slow")
-    from .scrypt import scrypt_1024_1_1_80 as getPoWHash
+    from .scrypt import scrypt_1024_1_1_80 as scrypt_pow_hash
 
 MAX_TARGET = 0x00000FFFFF000000000000000000000000000000000000000000000000000000
+LCC_LAST_SCRYPT_BLOCK = 1371111
+
+def pow_hash(bytes, height):
+    if height > LCC_LAST_SCRYPT_BLOCK:
+        return Hash(bytes)
+    return scrypt_pow_hash(bytes)
 
 def serialize_header(res):
     s = int_to_hex(res.get('version'), 4) \
@@ -66,7 +72,8 @@ def hash_header(header):
     return hash_encode(Hash(bfh(serialize_header(header))))
 
 def pow_hash_header(header):
-    return hash_encode(getPoWHash(bfh(serialize_header(header))))
+    height = header.get('block_height')
+    return hash_encode(pow_hash(bfh(serialize_header(header)), height))
 
 
 blockchains = {}
@@ -179,6 +186,7 @@ class Blockchain(util.PrintError):
         for i in range(num):
             raw_header = data[i*80:(i+1) * 80]
             header = deserialize_header(raw_header, index*2016 + i)
+            # TODO: LCC Get the target for the height to verify with
             self.verify_header(header, prev_hash, target)
             prev_hash = hash_header(header)
 
@@ -296,6 +304,7 @@ class Blockchain(util.PrintError):
 
     def get_target(self, index):
         # compute target from chunk x, used in chunk x+1
+        # TODO: LCC Wrap this so it calls DGW after fork block
         if constants.net.TESTNET:
             return 0
         if index == -1:

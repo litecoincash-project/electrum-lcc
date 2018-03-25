@@ -40,7 +40,7 @@ def inv_dict(d):
     return {v: k for k, v in d.items()}
 
 
-base_units = {'LTC':8, 'mLTC':5, 'uLTC':2}
+base_units = {'LCC':7, 'mLCC':4, 'uLCC':1}
 
 def normalize_version(v):
     return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")]
@@ -106,7 +106,7 @@ class Satoshis(object):
         return 'Satoshis(%d)'%self.value
 
     def __str__(self):
-        return format_satoshis(self.value) + " LTC"
+        return format_satoshis(self.value) + " LCC"
 
 class Fiat(object):
     def __new__(cls, value, ccy):
@@ -305,7 +305,7 @@ def android_data_dir():
     return PythonActivity.mActivity.getFilesDir().getPath() + '/data'
 
 def android_headers_dir():
-    d = android_ext_dir() + '/org.electrum_ltc.electrum_ltc'
+    d = android_ext_dir() + '/sh.litecoinca.electrum_lcc'
     if not os.path.exists(d):
         os.mkdir(d)
     return d
@@ -314,7 +314,7 @@ def android_check_data_dir():
     """ if needed, move old directory to sandbox """
     ext_dir = android_ext_dir()
     data_dir = android_data_dir()
-    old_electrum_dir = ext_dir + '/electrum-ltc'
+    old_electrum_dir = ext_dir + '/electrum-lcc'
     if not os.path.exists(data_dir) and os.path.exists(old_electrum_dir):
         import shutil
         new_headers_path = android_headers_dir() + '/blockchain_headers'
@@ -395,24 +395,24 @@ def user_dir():
     if 'ANDROID_DATA' in os.environ:
         return android_check_data_dir()
     elif os.name == 'posix':
-        return os.path.join(os.environ["HOME"], ".electrum-ltc")
+        return os.path.join(os.environ["HOME"], ".electrum-lcc")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum-LTC")
+        return os.path.join(os.environ["APPDATA"], "Electrum-LCC")
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum-LTC")
+        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum-LCC")
     else:
         #raise Exception("No home directory found in environment variables.")
         return
 
 
-def format_satoshis_plain(x, decimal_point = 8):
+def format_satoshis_plain(x, decimal_point = 7):
     """Display a satoshi amount scaled.  Always uses a '.' as a decimal
     point and has no thousands separator"""
     scale_factor = pow(10, decimal_point)
     return "{:.8f}".format(Decimal(x) / scale_factor).rstrip('0').rstrip('.')
 
 
-def format_satoshis(x, is_diff=False, num_zeros = 0, decimal_point = 8, whitespaces=False):
+def format_satoshis(x, is_diff=False, num_zeros = 0, decimal_point = 7, whitespaces=False):
     from locale import localeconv
     if x is None:
         return 'unknown'
@@ -498,25 +498,13 @@ def time_difference(distance_in_time, include_seconds):
         return "over %d years" % (round(distance_in_minutes / 525600))
 
 mainnet_block_explorers = {
-    'Bchain.info': ('https://bchain.info/',
-                        {'tx': 'LTC/tx/', 'addr': 'LTC/addr/'}),
-    'BlockCypher.com': ('https://live.blockcypher.com/ltc/',
+    'explorer.litecoinca.sh': ('http://explorer.litecoinca.sh/',
                         {'tx': 'tx/', 'addr': 'address/'}),
-    'explorer.litecoin.net': ('http://explorer.litecoin.net/',
-                        {'tx': 'tx/', 'addr': 'address/'}),
-    'LiteCore': ('https://insight.litecore.io/',
-                        {'tx': 'tx/', 'addr': 'address/'}),
-    'SoChain': ('https://chain.so/',
-                        {'tx': 'tx/LTC/', 'addr': 'address/LTC/'}),
     'system default': ('blockchain://12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2/',
                         {'tx': 'tx/', 'addr': 'address/'}),
 }
 
 testnet_block_explorers = {
-    'LiteCore': ('https://testnet.litecore.io/',
-                        {'tx': 'tx/', 'addr': 'address/'}),
-    'SoChain': ('https://chain.so/',
-                        {'tx': 'tx/LTCTEST/', 'addr': 'address/LTCTEST/'}),
     'system default': ('blockchain://4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0/',
                        {'tx': 'tx/', 'addr': 'address/'}),
 }
@@ -551,12 +539,12 @@ def parse_URI(uri, on_pr=None):
 
     if ':' not in uri:
         if not bitcoin.is_address(uri):
-            raise BaseException("Not a litecoin address")
+            raise BaseException("Not a litecoincash address")
         return {'address': uri}
 
     u = urllib.parse.urlparse(uri)
-    if u.scheme != 'litecoin':
-        raise BaseException("Not a litecoin URI")
+    if u.scheme != 'litecoincash':
+        raise BaseException("Not a litecoincash URI")
     address = u.path
 
     # python for android fails to parse query
@@ -573,7 +561,7 @@ def parse_URI(uri, on_pr=None):
     out = {k: v[0] for k, v in pq.items()}
     if address:
         if not bitcoin.is_address(address):
-            raise BaseException("Invalid litecoin address:" + address)
+            raise BaseException("Invalid litecoincash address:" + address)
         out['address'] = address
     if 'amount' in out:
         am = out['amount']
@@ -623,7 +611,7 @@ def create_URI(addr, amount, message):
         query.append('amount=%s'%format_satoshis_plain(amount))
     if message:
         query.append('message=%s'%urllib.parse.quote(message))
-    p = urllib.parse.ParseResult(scheme='litecoin', netloc='', path=addr, params='', query='&'.join(query), fragment='')
+    p = urllib.parse.ParseResult(scheme='litecoincash', netloc='', path=addr, params='', query='&'.join(query), fragment='')
     return urllib.parse.urlunparse(p)
 
 

@@ -115,13 +115,6 @@ class ExchangeBase(PrintError):
         return sorted([str(a) for (a, b) in rates.items() if b is not None and len(a)==3])
 
 
-class Bit2C(ExchangeBase):
-
-    def get_rates(self, ccy):
-        json = self.get_json('www.bit2c.co.il', '/Exchanges/LTCNIS/Ticker.json')
-        return {'NIS': Decimal(json['ll'])}
-
-
 class BitcoinAverage(ExchangeBase):
 
     def get_rates(self, ccy):
@@ -139,6 +132,16 @@ class BitcoinAverage(ExchangeBase):
                                "/indices/global/history/LTC%s?period=alltime&format=csv" % ccy)
         return dict([(h['DateTime'][:10], h['Average'])
                      for h in history])
+
+
+'''
+class Bit2C(ExchangeBase):
+
+    def get_rates(self, ccy):
+        json = self.get_json('www.bit2c.co.il', '/Exchanges/LTCNIS/Ticker.json')
+        return {'NIS': Decimal(json['ll'])}
+
+
 
 
 class BitcoinVenezuela(ExchangeBase):
@@ -265,7 +268,7 @@ class WEX(ExchangeBase):
         return {'EUR': Decimal(json_eur['ltc_eur']['last']),
                 'RUB': Decimal(json_rub['ltc_rur']['last']),
                 'USD': Decimal(json_usd['ltc_usd']['last'])}
-
+'''
 
 def dictinvert(d):
     inv = {}
@@ -464,6 +467,6 @@ class FxThread(ThreadJob):
         return self.fiat_value(satoshis, self.history_rate(d_t))
 
     def timestamp_rate(self, timestamp):
-        from electrum_ltc.util import timestamp_to_datetime
+        from electrum_lcc.util import timestamp_to_datetime
         date = timestamp_to_datetime(timestamp)
         return self.history_rate(date)

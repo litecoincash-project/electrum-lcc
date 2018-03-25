@@ -6,10 +6,10 @@
   <array>
     <dict>
       <key>CFBundleURLName</key>
-      <string>litecoin</string>
+      <string>litecoincash</string>
       <key>CFBundleURLSchemes</key>
       <array>
-        <string>litecoin</string>
+        <string>litecoincash</string>
       </array>
     </dict>
   </array>

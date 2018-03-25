@@ -40,9 +40,10 @@ from . import constants
 
 
 ################################## transactions
-
+COIN_SCALE = 10
 COINBASE_MATURITY = 100
-COIN = 100000000
+COIN = 100000000 / COIN_SCALE
+
 
 # supported types of transaction outputs
 TYPE_ADDRESS = 0
@@ -594,7 +595,7 @@ from ecdsa.util import string_to_number, number_to_string
 
 def msg_magic(message):
     length = bfh(var_int(len(message)))
-    return b"\x19Litecoin Signed Message:\n" + length + message
+    return b"\x19Litecoin Cash Signed Message:\n" + length + message
 
 
 def verify_message(address, sig, message):

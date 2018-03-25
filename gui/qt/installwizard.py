@@ -8,10 +8,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from electrum_ltc import Wallet, WalletStorage
-from electrum_ltc.util import UserCancelled, InvalidPassword
-from electrum_ltc.base_wizard import BaseWizard, HWD_SETUP_DECRYPT_WALLET
-from electrum_ltc.i18n import _
+from electrum_lcc import Wallet, WalletStorage
+from electrum_lcc.util import UserCancelled, InvalidPassword
+from electrum_lcc.base_wizard import BaseWizard, HWD_SETUP_DECRYPT_WALLET
+from electrum_lcc.i18n import _
 
 from .seed_dialog import SeedLayout, KeysLayout
 from .network_dialog import NetworkChoiceLayout
@@ -98,7 +98,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
     def __init__(self, config, app, plugins, storage):
         BaseWizard.__init__(self, config, storage)
         QDialog.__init__(self, None)
-        self.setWindowTitle('Electrum-LTC  -  ' + _('Install Wizard'))
+        self.setWindowTitle('Electrum-LCC  -  ' + _('Install Wizard'))
         self.app = app
         self.config = config
         # Set for base base class
@@ -143,7 +143,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         hbox.setStretchFactor(scroll, 1)
         outer_vbox.addLayout(hbox)
         outer_vbox.addLayout(Buttons(self.back_button, self.next_button))
-        self.set_icon(':icons/electrum-ltc.png')
+        self.set_icon(':icons/electrum-lcc.png')
         self.show()
         self.raise_()
         self.refresh_gui()  # Need for QT on MacOSX.  Lame.
@@ -170,7 +170,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         hbox2.addWidget(self.pw_e)
         hbox2.addStretch()
         vbox.addLayout(hbox2)
-        self.set_layout(vbox, title=_('Electrum-LTC wallet'))
+        self.set_layout(vbox, title=_('Electrum-LCC wallet'))
 
         wallet_folder = os.path.dirname(self.storage.path)
 

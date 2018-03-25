@@ -1,4 +1,4 @@
-Electrum-LTC - Lightweight Litecoin client
+Electrum-LCC - Lightweight Litecoin Cash client
 ==========================================
 
 ::
@@ -7,7 +7,7 @@ Electrum-LTC - Lightweight Litecoin client
   Original Author: Thomas Voegtlin
   Port Maintainer: Pooler
   Language: Python
-  Homepage: https://electrum-ltc.org/
+  Homepage: https://github.com/litecoincash-project/electrum-lcc
 
 
 
@@ -27,7 +27,7 @@ Electrum from its root directory, without installing it on your
 system; all the python dependencies are included in the 'packages'
 directory. To run Electrum from its root directory, just do::
 
-    ./electrum-ltc
+    ./electrum-lcc
 
 You can also install Electrum on your system, by running this command::
 
@@ -48,8 +48,8 @@ Development version
 
 Check out the code from Github::
 
-    git clone git://github.com/pooler/electrum-ltc.git
-    cd electrum-ltc
+    git clone https://github.com/litecoincash-project/electrum-lcc.git
+    cd electrum-lcc
 
 Run install (this should install dependencies)::
 

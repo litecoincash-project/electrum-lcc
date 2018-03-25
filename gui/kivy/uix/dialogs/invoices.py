@@ -76,10 +76,10 @@ Builder.load_string('''
 ''')
 
 from kivy.properties import BooleanProperty
-from electrum_ltc_gui.kivy.i18n import _
-from electrum_ltc.util import format_time
-from electrum_ltc.paymentrequest import PR_UNPAID, PR_PAID, PR_UNKNOWN, PR_EXPIRED
-from electrum_ltc_gui.kivy.uix.context_menu import ContextMenu
+from electrum_lcc_gui.kivy.i18n import _
+from electrum_lcc.util import format_time
+from electrum_lcc.paymentrequest import PR_UNPAID, PR_PAID, PR_UNKNOWN, PR_EXPIRED
+from electrum_lcc_gui.kivy.uix.context_menu import ContextMenu
 
 invoice_text = {
     PR_UNPAID:_('Pending'),

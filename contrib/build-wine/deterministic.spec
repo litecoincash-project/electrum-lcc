@@ -11,7 +11,7 @@ else:
     raise BaseException('no name')
 
 
-home = 'C:\\electrum-ltc\\'
+home = 'C:\\electrum-lcc\\'
 
 # see https://github.com/pyinstaller/pyinstaller/issues/2005
 hiddenimports = []
@@ -28,14 +28,14 @@ binaries = [("c:/python3.5.4/libusb-1.0.dll", ".")]
 binaries += [b for b in collect_dynamic_libs('PyQt5') if 'qwindowsvista' in b[0]]
 
 datas = [
-    (home+'lib/currencies.json', 'electrum_ltc'),
-    (home+'lib/servers.json', 'electrum_ltc'),
-    (home+'lib/checkpoints.json', 'electrum_ltc'),
-    (home+'lib/servers_testnet.json', 'electrum_ltc'),
-    (home+'lib/checkpoints_testnet.json', 'electrum_ltc'),
-    (home+'lib/wordlist/english.txt', 'electrum_ltc/wordlist'),
-    (home+'lib/locale', 'electrum_ltc/locale'),
-    (home+'plugins', 'electrum_ltc_plugins'),
+    (home+'lib/currencies.json', 'electrum_lcc'),
+    (home+'lib/servers.json', 'electrum_lcc'),
+    (home+'lib/checkpoints.json', 'electrum_lcc'),
+    (home+'lib/servers_testnet.json', 'electrum_lcc'),
+    (home+'lib/checkpoints_testnet.json', 'electrum_lcc'),
+    (home+'lib/wordlist/english.txt', 'electrum_lcc/wordlist'),
+    (home+'lib/locale', 'electrum_lcc/locale'),
+    (home+'plugins', 'electrum_lcc_plugins'),
     ('C:\\Program Files (x86)\\ZBar\\bin\\', '.')
 ]
 datas += collect_data_files('trezorlib')
@@ -43,7 +43,7 @@ datas += collect_data_files('btchip')
 datas += collect_data_files('keepkeylib')
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
-a = Analysis([home+'electrum-ltc',
+a = Analysis([home+'electrum-lcc',
               home+'gui/qt/main_window.py',
               home+'gui/text.py',
               home+'lib/util.py',
@@ -88,7 +88,7 @@ exe_standalone = EXE(
     a.scripts,
     a.binaries,
     a.datas, 
-    name=os.path.join('build\\pyi.win32\\electrum-ltc', cmdline_name + ".exe"),
+    name=os.path.join('build\\pyi.win32\\electrum-lcc', cmdline_name + ".exe"),
     debug=False,
     strip=None,
     upx=False,
@@ -101,7 +101,7 @@ exe_portable = EXE(
     a.scripts,
     a.binaries,
     a.datas + [ ('is_portable', 'README.md', 'DATA' ) ],
-    name=os.path.join('build\\pyi.win32\\electrum-ltc', cmdline_name + "-portable.exe"),
+    name=os.path.join('build\\pyi.win32\\electrum-lcc', cmdline_name + "-portable.exe"),
     debug=False,
     strip=None,
     upx=False,
@@ -115,7 +115,7 @@ exe_dependent = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
-    name=os.path.join('build\\pyi.win32\\electrum-ltc', cmdline_name),
+    name=os.path.join('build\\pyi.win32\\electrum-lcc', cmdline_name),
     debug=False,
     strip=None,
     upx=False,
@@ -132,4 +132,4 @@ coll = COLLECT(
     debug=False,
     icon=home+'icons/electrum.ico',
     console=False,
-    name=os.path.join('dist', 'electrum-ltc'))
+    name=os.path.join('dist', 'electrum-lcc'))

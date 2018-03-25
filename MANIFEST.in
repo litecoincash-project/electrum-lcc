@@ -1,9 +1,9 @@
 include LICENCE RELEASE-NOTES AUTHORS
 include README.rst
-include electrum-ltc.conf.sample
-include electrum-ltc.desktop
+include electrum-lcc.conf.sample
+include electrum-lcc.desktop
 include *.py
-include electrum-ltc
+include electrum-lcc
 include contrib/requirements/requirements.txt
 include contrib/requirements/requirements-hw.txt
 recursive-include lib *.py

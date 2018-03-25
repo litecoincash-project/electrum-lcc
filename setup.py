@@ -36,37 +36,37 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
         else:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
-        (os.path.join(usr_share, 'applications/'), ['electrum-ltc.desktop']),
-        (os.path.join(usr_share, icons_dirname), ['icons/electrum-ltc.png'])
+        (os.path.join(usr_share, 'applications/'), ['electrum-lcc.desktop']),
+        (os.path.join(usr_share, icons_dirname), ['icons/electrum-lcc.png'])
     ]
 
 setup(
-    name="Electrum-LTC",
+    name="Electrum-LCC",
     version=version.ELECTRUM_VERSION,
     install_requires=requirements,
     packages=[
-        'electrum_ltc',
-        'electrum_ltc_gui',
-        'electrum_ltc_gui.qt',
-        'electrum_ltc_plugins',
-        'electrum_ltc_plugins.audio_modem',
-        'electrum_ltc_plugins.cosigner_pool',
-        'electrum_ltc_plugins.email_requests',
-        'electrum_ltc_plugins.hw_wallet',
-        'electrum_ltc_plugins.keepkey',
-        'electrum_ltc_plugins.labels',
-        'electrum_ltc_plugins.ledger',
-        'electrum_ltc_plugins.trezor',
-        'electrum_ltc_plugins.digitalbitbox',
-        'electrum_ltc_plugins.virtualkeyboard',
+        'electrum_lcc',
+        'electrum_lcc_gui',
+        'electrum_lcc_gui.qt',
+        'electrum_lcc_plugins',
+        'electrum_lcc_plugins.audio_modem',
+        'electrum_lcc_plugins.cosigner_pool',
+        'electrum_lcc_plugins.email_requests',
+        'electrum_lcc_plugins.hw_wallet',
+        'electrum_lcc_plugins.keepkey',
+        'electrum_lcc_plugins.labels',
+        'electrum_lcc_plugins.ledger',
+        'electrum_lcc_plugins.trezor',
+        'electrum_lcc_plugins.digitalbitbox',
+        'electrum_lcc_plugins.virtualkeyboard',
     ],
     package_dir={
-        'electrum_ltc': 'lib',
-        'electrum_ltc_gui': 'gui',
-        'electrum_ltc_plugins': 'plugins',
+        'electrum_lcc': 'lib',
+        'electrum_lcc_gui': 'gui',
+        'electrum_lcc_plugins': 'plugins',
     },
     package_data={
-        'electrum_ltc': [
+        'electrum_lcc': [
             'servers.json',
             'servers_testnet.json',
             'currencies.json',
@@ -77,14 +77,14 @@ setup(
             'locale/*/LC_MESSAGES/electrum.mo',
         ]
     },
-    scripts=['electrum-ltc'],
+    scripts=['electrum-lcc'],
     data_files=data_files,
-    description="Lightweight Litecoin Wallet",
+    description="Lightweight Litecoin Cash Wallet",
     author="Thomas Voegtlin",
     author_email="thomasv@electrum.org",
     license="MIT Licence",
-    url="http://electrum-ltc.org",
-    long_description="""Lightweight Litecoin Wallet"""
+    url="https://github.com/litecoincash-project/electrum-lcc",
+    long_description="""Lightweight Litecoin Cash Wallet"""
 )
 
 # Optional modules (not required to run Electrum)

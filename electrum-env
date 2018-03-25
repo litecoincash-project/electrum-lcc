@@ -21,6 +21,6 @@ fi
 
 export PYTHONPATH="/usr/local/lib/python${PYTHON_VER}/site-packages:$PYTHONPATH"
 
-./electrum-ltc "$@"
+electrum-lcc "$@"
 
 deactivate
