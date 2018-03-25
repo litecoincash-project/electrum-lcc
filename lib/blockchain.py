@@ -188,14 +188,19 @@ class Blockchain(util.PrintError):
         num = len(data) // 80
         start_height = index * 2016
         prev_hash = self.get_hash(start_height - 1)
-        target = self.get_target((index - 1) * 2016)
+
+        if start_height <= LCC_LAST_SCRYPT_BLOCK:
+            target = self.get_target((index - 1) * 2016)
+
         for i in range(num):
             height = start_height + i
             raw_header = data[i*80:(i+1) * 80]
             header = deserialize_header(raw_header, height)
             chain.append(header)
+
             if height > LCC_LAST_SCRYPT_BLOCK:
                 target = self.get_target(height, chain)
+
             self.verify_header(header, prev_hash, target)
             prev_hash = hash_header(header)
 
@@ -335,14 +340,9 @@ class Blockchain(util.PrintError):
 
         return self.get_target_lcc(height, chain)
 
-    def get_target_lcc(self, height, chain=None):
+    def get_target_lcc(self, height, chain):
 
-        """ Litecoin Cash: Calculate the difficulty post-fork block using DGW. """
-
-        assert height > LCC_LAST_SCRYPT_BLOCK, "Using dark gravity before fork block"
-
-        if chain is None:
-            chain = []
+        """ Litecoin Cash: Calculate the difficulty post fork block using DGW. """
 
         def header_from_chain(block_height):
             header = self.read_header(block_height)
@@ -352,47 +352,33 @@ class Blockchain(util.PrintError):
                         header = hdr
             return header
 
-        last = header_from_chain(height - 1)
+        assert height > LCC_LAST_SCRYPT_BLOCK, "Using dark gravity before fork block"
 
-        time_span = 0
-        last_time = 0
-        difficulty_average = 0
-        prev_difficulty_average = 0
+        last = header_from_chain(height - 1)
+        end_time = last.get('timestamp')
 
         if last is None or height - LCC_LAST_SCRYPT_BLOCK < LCC_DGW_PAST_BLOCKS:
             return LCC_MIN_POW
 
-        for i in range(LCC_DGW_PAST_BLOCKS):
-            count = i+1
-
+        for count in [i+1 for i in range(LCC_DGW_PAST_BLOCKS)]:
             if count <= LCC_DGW_PAST_BLOCKS:
                 target = self.bits_to_target(last.get('bits'))
-
                 if count == 1:
-                    difficulty_average = target
+                    past_target_average = target
                 else:
-                    difficulty_average = ((prev_difficulty_average * count) + target) // (count + 1)
+                    past_target_average = ((past_target_average * count) + target) // (count + 1)
 
-                prev_difficulty_average = difficulty_average
+            if count != LCC_DGW_PAST_BLOCKS:
+                last = header_from_chain((height - 1) - count)
 
-            time_stamp = last.get('timestamp')
-
-            if last_time > 0:
-                time_span += (last_time - time_stamp)
-
-            last_time = time_stamp
-
-            last = header_from_chain((height - 1) - count)
-
-        new_target = difficulty_average
-
+        time_span = end_time - last.get('timestamp')
         target_timespan = LCC_DGW_PAST_BLOCKS * LCC_DGW_TARGET_SPACING
 
         time_span = max(time_span, target_timespan // 3)
         time_span = min(time_span, target_timespan * 3)
 
         # retarget
-        new_target *= time_span
+        new_target = past_target_average * time_span
         new_target = new_target // target_timespan
         new_target = min(new_target, LCC_MIN_POW)
 
