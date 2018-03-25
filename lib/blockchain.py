@@ -38,6 +38,7 @@ except ImportError:
 LCC_LAST_SCRYPT_BLOCK = 1371111     # Litecoin Cash: Fork block
 LCC_MIN_POW = 0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 LCC_DGW_TARGET_SPACING = int(2.5 * 60)   # Litecoin Cash: Target difficulty adjust spacing for dark gravity
+LCC_DGW_PAST_BLOCKS = 24
 
 MAX_TARGET = 0x00000FFFFF000000000000000000000000000000000000000000000000000000
 
@@ -183,7 +184,6 @@ class Blockchain(util.PrintError):
             raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
     def verify_chunk(self, index, data):
-        print("Verify chunk: {}".format(index))
         chain = []
         num = len(data) // 80
         start_height = index * 2016
@@ -335,31 +335,6 @@ class Blockchain(util.PrintError):
 
         return self.get_target_lcc(height, chain)
 
-    '''
-    def get_target_orig(self, index):
-        # compute target from chunk x, used in chunk x+1
-        if constants.net.TESTNET:
-            return 0
-        if index == -1:
-            return 0x00000FFFF0000000000000000000000000000000000000000000000000000000
-        if index < len(self.checkpoints):
-            h, t, _ = self.checkpoints[index]
-            return t
-        # new target
-        # Litecoin: go back the full period unless it's the first retarget
-        first_timestamp = self.get_timestamp(index * 2016 - 1 if index > 0 else 0)
-        last = self.read_header(index * 2016 + 2015)
-        bits = last.get('bits')
-        target = self.bits_to_target(bits)
-        nActualTimespan = last.get('timestamp') - first_timestamp
-        nTargetTimespan = 84 * 60 * 60
-        nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
-        nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
-        new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
-
-        return new_target
-    '''
-
     def get_target_lcc(self, height, chain=None):
 
         """ Litecoin Cash: Calculate the difficulty post-fork block using DGW. """
@@ -369,29 +344,29 @@ class Blockchain(util.PrintError):
         if chain is None:
             chain = []
 
-        last = self.read_header(height - 1)
-        if last is None:
-            for h in chain:
-                if h.get('block_height') == height - 1:
-                    last = h
+        def header_from_chain(block_height):
+            header = self.read_header(block_height)
+            if header is None:
+                for hdr in chain:
+                    if hdr.get('block_height') == block_height:
+                        header = hdr
+            return header
 
-        last_solved = last
-        reading = last
+        last = header_from_chain(height - 1)
+
         time_span = 0
         last_time = 0
-        past_blocks = 24
-        count = 0
         difficulty_average = 0
         prev_difficulty_average = 0
 
-        if last_solved is None or height - LCC_LAST_SCRYPT_BLOCK < past_blocks:
+        if last is None or height - LCC_LAST_SCRYPT_BLOCK < LCC_DGW_PAST_BLOCKS:
             return LCC_MIN_POW
 
-        for i in range(past_blocks):
-            count += 1
+        for i in range(LCC_DGW_PAST_BLOCKS):
+            count = i+1
 
-            if count <= past_blocks:
-                target = self.bits_to_target(reading.get('bits'))
+            if count <= LCC_DGW_PAST_BLOCKS:
+                target = self.bits_to_target(last.get('bits'))
 
                 if count == 1:
                     difficulty_average = target
@@ -400,22 +375,18 @@ class Blockchain(util.PrintError):
 
                 prev_difficulty_average = difficulty_average
 
-            time_stamp = reading.get('timestamp')
+            time_stamp = last.get('timestamp')
 
             if last_time > 0:
                 time_span += (last_time - time_stamp)
 
             last_time = time_stamp
 
-            reading = self.read_header((height - 1) - count)
-            if reading is None:
-                for br in chain:
-                    if br.get('block_height') == (height - 1) - count:
-                        reading = br
+            last = header_from_chain((height - 1) - count)
 
         new_target = difficulty_average
 
-        target_timespan = count * LCC_DGW_TARGET_SPACING
+        target_timespan = LCC_DGW_PAST_BLOCKS * LCC_DGW_TARGET_SPACING
 
         time_span = max(time_span, target_timespan // 3)
         time_span = min(time_span, target_timespan * 3)
