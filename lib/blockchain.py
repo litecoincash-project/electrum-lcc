@@ -35,8 +35,12 @@ except ImportError:
     util.print_msg("Warning: package scrypt not available; synchronization could be very slow")
     from .scrypt import scrypt_1024_1_1_80 as scrypt_pow_hash
 
+LCC_LAST_SCRYPT_BLOCK = 1371111     # Litecoin Cash: Fork block
+LCC_MIN_POW = 0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+LCC_DGW_TARGET_SPACING = int(2.5 * 60)   # Litecoin Cash: Target difficulty adjust spacing for dark gravity
+
 MAX_TARGET = 0x00000FFFFF000000000000000000000000000000000000000000000000000000
-LCC_LAST_SCRYPT_BLOCK = 1371111
+
 
 def pow_hash(bytes, height):
     if height > LCC_LAST_SCRYPT_BLOCK:
@@ -74,7 +78,6 @@ def hash_header(header):
 def pow_hash_header(header):
     height = header.get('block_height')
     return hash_encode(pow_hash(bfh(serialize_header(header)), height))
-
 
 blockchains = {}
 
@@ -167,8 +170,8 @@ class Blockchain(util.PrintError):
         self._size = os.path.getsize(p)//80 if os.path.exists(p) else 0
 
     def verify_header(self, header, prev_hash, target):
-        _hash = hash_header(header)
-        _powhash = pow_hash_header(header)
+        # _hash = hash_header(header)
+        _hash = pow_hash_header(header)
         if prev_hash != header.get('prev_block_hash'):
             raise BaseException("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if constants.net.TESTNET:
@@ -176,17 +179,23 @@ class Blockchain(util.PrintError):
         bits = self.target_to_bits(target)
         if bits != header.get('bits'):
             raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))
-        if int('0x' + _powhash, 16) > target:
-            raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _powhash, 16), target))
+        if int('0x' + _hash, 16) > target:
+            raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
     def verify_chunk(self, index, data):
+        print("Verify chunk: {}".format(index))
+        chain = []
         num = len(data) // 80
-        prev_hash = self.get_hash(index * 2016 - 1)
-        target = self.get_target(index-1)
+        start_height = index * 2016
+        prev_hash = self.get_hash(start_height - 1)
+        target = self.get_target((index - 1) * 2016)
         for i in range(num):
+            height = start_height + i
             raw_header = data[i*80:(i+1) * 80]
-            header = deserialize_header(raw_header, index*2016 + i)
-            # TODO: LCC Get the target for the height to verify with
+            header = deserialize_header(raw_header, height)
+            chain.append(header)
+            if height > LCC_LAST_SCRYPT_BLOCK:
+                target = self.get_target(height, chain)
             self.verify_header(header, prev_hash, target)
             prev_hash = hash_header(header)
 
@@ -302,9 +311,33 @@ class Blockchain(util.PrintError):
             return ts
         return self.read_header(height).get('timestamp')
 
-    def get_target(self, index):
+    def get_target(self, height, chain=None):
+
+        """ Get the difficulty target for a block for Litecoin Cash. Inspired by DGW in electrum-dash. """
+
+        if constants.net.TESTNET:
+            return 0
+
+        chunk_index = height // 2016
+
+        if chunk_index == -1:
+            return 0x00000FFFF0000000000000000000000000000000000000000000000000000000
+
+        if chunk_index < len(self.checkpoints):
+            h, t, _ = self.checkpoints[chunk_index]
+            return t
+
+        if height <= LCC_LAST_SCRYPT_BLOCK:
+            return self.get_target_ltc(chunk_index)
+
+        if chain is None:
+            chain = []
+
+        return self.get_target_lcc(height, chain)
+
+    '''
+    def get_target_orig(self, index):
         # compute target from chunk x, used in chunk x+1
-        # TODO: LCC Wrap this so it calls DGW after fork block
         if constants.net.TESTNET:
             return 0
         if index == -1:
@@ -313,6 +346,89 @@ class Blockchain(util.PrintError):
             h, t, _ = self.checkpoints[index]
             return t
         # new target
+        # Litecoin: go back the full period unless it's the first retarget
+        first_timestamp = self.get_timestamp(index * 2016 - 1 if index > 0 else 0)
+        last = self.read_header(index * 2016 + 2015)
+        bits = last.get('bits')
+        target = self.bits_to_target(bits)
+        nActualTimespan = last.get('timestamp') - first_timestamp
+        nTargetTimespan = 84 * 60 * 60
+        nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
+        nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
+        new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
+
+        return new_target
+    '''
+
+    def get_target_lcc(self, height, chain=None):
+
+        """ Litecoin Cash: Calculate the difficulty post-fork block using DGW. """
+
+        assert height > LCC_LAST_SCRYPT_BLOCK, "Using dark gravity before fork block"
+
+        if chain is None:
+            chain = []
+
+        last = self.read_header(height - 1)
+        if last is None:
+            for h in chain:
+                if h.get('block_height') == height - 1:
+                    last = h
+
+        last_solved = last
+        reading = last
+        time_span = 0
+        last_time = 0
+        past_blocks = 24
+        count = 0
+        difficulty_average = 0
+        prev_difficulty_average = 0
+
+        if last_solved is None or height - LCC_LAST_SCRYPT_BLOCK < past_blocks:
+            return LCC_MIN_POW
+
+        for i in range(past_blocks):
+            count += 1
+
+            if count <= past_blocks:
+                target = self.bits_to_target(reading.get('bits'))
+
+                if count == 1:
+                    difficulty_average = target
+                else:
+                    difficulty_average = ((prev_difficulty_average * count) + target) // (count + 1)
+
+                prev_difficulty_average = difficulty_average
+
+            time_stamp = reading.get('timestamp')
+
+            if last_time > 0:
+                time_span += (last_time - time_stamp)
+
+            last_time = time_stamp
+
+            reading = self.read_header((height - 1) - count)
+            if reading is None:
+                for br in chain:
+                    if br.get('block_height') == (height - 1) - count:
+                        reading = br
+
+        new_target = difficulty_average
+
+        target_timespan = count * LCC_DGW_TARGET_SPACING
+
+        time_span = max(time_span, target_timespan // 3)
+        time_span = min(time_span, target_timespan * 3)
+
+        # retarget
+        new_target *= time_span
+        new_target = new_target // target_timespan
+        new_target = min(new_target, LCC_MIN_POW)
+
+        return new_target
+
+    def get_target_ltc(self, index):
+        # compute target from chunk x, used in chunk x+1
         # Litecoin: go back the full period unless it's the first retarget
         first_timestamp = self.get_timestamp(index * 2016 - 1 if index > 0 else 0)
         last = self.read_header(index * 2016 + 2015)
@@ -357,7 +473,7 @@ class Blockchain(util.PrintError):
             return False
         if prev_hash != header.get('prev_block_hash'):
             return False
-        target = self.get_target(height // 2016 - 1)
+        target = self.get_target(height - 2016)
         try:
             self.verify_header(header, prev_hash, target)
         except BaseException as e:
@@ -373,7 +489,7 @@ class Blockchain(util.PrintError):
             return True
         except BaseException as e:
             self.print_error('verify_chunk %d failed'%idx, str(e))
-            return False
+            raise
 
     def get_checkpoints(self):
         # for each chunk, store the hash of the last block and the target after the chunk
@@ -381,7 +497,7 @@ class Blockchain(util.PrintError):
         n = self.height() // 2016
         for index in range(n):
             h = self.get_hash((index+1) * 2016 -1)
-            target = self.get_target(index)
+            target = self.get_target(index * 2016)
             # Litecoin: also store the timestamp of the last block
             tstamp = self.get_timestamp((index+1) * 2016 - 1)
             cp.append((h, target, tstamp))
