@@ -867,7 +867,7 @@ class Transaction:
 
     def serialize_preimage(self, i):
         nVersion = int_to_hex(self.version, 4)
-        nHashType = int_to_hex(1, 4)
+        nHashType = int_to_hex(65, 4)
         nLocktime = int_to_hex(self.locktime, 4)
         inputs = self.inputs()
         outputs = self.outputs()
@@ -1044,6 +1044,7 @@ class Transaction:
                     self._inputs[i] = txin
         print_error("is_complete", self.is_complete())
         self.raw = self.serialize()
+        print("Signed raw transaction: {}".format(self.raw))
 
     def get_outputs(self):
         """convert pubkeys to addresses"""
