@@ -887,7 +887,6 @@ class Transaction:
             txins = var_int(len(inputs)) + ''.join(self.serialize_input(txin, self.get_preimage_script(txin) if i==k else '') for k, txin in enumerate(inputs))
             txouts = var_int(len(outputs)) + ''.join(self.serialize_output(o) for o in outputs)
             preimage = nVersion + txins + txouts + nLocktime + nHashType
-            print("PreImage String: {}".format(preimage))
         return preimage
 
     def is_segwit(self):
@@ -1045,7 +1044,6 @@ class Transaction:
                     self._inputs[i] = txin
         print_error("is_complete", self.is_complete())
         self.raw = self.serialize()
-        print("Signed raw transaction: {}".format(self.raw))
 
     def get_outputs(self):
         """convert pubkeys to addresses"""
