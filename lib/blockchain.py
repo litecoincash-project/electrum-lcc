@@ -420,7 +420,8 @@ class Blockchain(util.PrintError):
     def can_connect(self, header, check_height=True):
         height = header['block_height']
         if check_height and self.height() != height - 1:
-            #self.print_error("cannot connect at height", height)
+            print("Checking on height: {}".format(self.height()))
+            self.print_error("cannot connect at height", height)
             return False
         if height == 0:
             return hash_header(header) == constants.net.GENESIS
@@ -430,10 +431,11 @@ class Blockchain(util.PrintError):
             return False
         if prev_hash != header.get('prev_block_hash'):
             return False
-        target = self.get_target(height - 2016)
+        target = self.get_target(height)
         try:
             self.verify_header(header, prev_hash, target)
         except BaseException as e:
+            print(e)
             return False
         return True
 

@@ -590,7 +590,7 @@ class Transaction:
         self._inputs = None
         self._outputs = None
         self.locktime = 0
-        self.version = 1
+        self.version = 2
 
     def update(self, raw):
         self.raw = raw
@@ -887,6 +887,7 @@ class Transaction:
             txins = var_int(len(inputs)) + ''.join(self.serialize_input(txin, self.get_preimage_script(txin) if i==k else '') for k, txin in enumerate(inputs))
             txouts = var_int(len(outputs)) + ''.join(self.serialize_output(o) for o in outputs)
             preimage = nVersion + txins + txouts + nLocktime + nHashType
+            print("PreImage String: {}".format(preimage))
         return preimage
 
     def is_segwit(self):
@@ -1038,7 +1039,7 @@ class Transaction:
                     public_key = private_key.get_verifying_key()
                     sig = private_key.sign_digest_deterministic(pre_hash, hashfunc=hashlib.sha256, sigencode = ecdsa.util.sigencode_der)
                     assert public_key.verify_digest(sig, pre_hash, sigdecode = ecdsa.util.sigdecode_der)
-                    txin['signatures'][j] = bh2u(sig) + '01'
+                    txin['signatures'][j] = bh2u(sig) + '41'
                     #txin['x_pubkeys'][j] = pubkey
                     txin['pubkeys'][j] = pubkey # needed for fd keys
                     self._inputs[i] = txin

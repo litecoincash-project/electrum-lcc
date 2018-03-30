@@ -859,6 +859,7 @@ class Network(util.DaemonThread):
                 next_height = (interface.bad + interface.good) // 2
                 assert next_height >= self.max_checkpoint()
             elif not interface.blockchain.can_connect(interface.bad_header, check_height=False):
+                print("Shutting down connection")
                 self.connection_down(interface.server)
                 next_height = None
             else:
