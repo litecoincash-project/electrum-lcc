@@ -431,7 +431,10 @@ class Blockchain(util.PrintError):
             return False
         if prev_hash != header.get('prev_block_hash'):
             return False
-        target = self.get_target(height)
+        if height > LCC_LAST_SCRYPT_BLOCK:
+            target = self.get_target(height)
+        else:
+            target = self.get_target(height - 2016)
         try:
             self.verify_header(header, prev_hash, target)
         except BaseException as e:
