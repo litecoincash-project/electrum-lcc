@@ -99,6 +99,7 @@ class ElectrumGui:
         if hasattr(QGuiApplication, 'setDesktopFileName'):
             QGuiApplication.setDesktopFileName('electrum-lcc.desktop')
         self.config = config
+        self.config.set_key('use_rbf', False)   # LCC: Disable RBF
         self.daemon = daemon
         self.plugins = plugins
         self.windows = []
