@@ -647,7 +647,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         return text
 
     def format_fee_rate(self, fee_rate):
-        return format_satoshis(fee_rate/1000, False, self.num_zeros, 0, False)  + ' sat/byte'
+        return format_satoshis(fee_rate/1000, False, self.num_zeros, 1, False) + ' μLCC/byte'
 
     def get_decimal_point(self):
         return self.decimal_point
@@ -655,7 +655,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
     def base_unit(self):
         assert self.decimal_point in [1, 4, 7]
         if self.decimal_point == 1:
-            return 'bits'
+            return 'μLCC'
         if self.decimal_point == 4:
             return 'mLCC'
         if self.decimal_point == 7:
@@ -2661,10 +2661,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
         use_rbf_cb = QCheckBox(_('Use Replace-By-Fee'))
         use_rbf_cb.setChecked(self.config.get('use_rbf', False))    # LCC: Disable RBF
-        use_rbf_cb.setToolTip(
-            _('If you check this box, your transactions will be marked as non-final,') + '\n' + \
-            _('and you will have the possibility, while they are unconfirmed, to replace them with transactions that pay higher fees.') + '\n' + \
-            _('Note that some merchants do not accept non-final transactions until they are confirmed.'))
+        use_rbf_cb.setToolTip(_('RBF is deprecated on the Litecoin Cash network.'))
         def on_use_rbf(x):
             self.config.set_key('use_rbf', x == Qt.Checked)
         use_rbf_cb.stateChanged.connect(on_use_rbf)
@@ -2721,7 +2718,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         SSL_id_e.setReadOnly(True)
         id_widgets.append((SSL_id_label, SSL_id_e))
 
-        units = ['LCC', 'mLCC', 'bits']
+        units = ['LCC', 'mLCC', 'μLCC']
         msg = _('Base unit of your wallet.')\
               + '\n1LCC=1000mLCC.\n' \
               + _(' These settings affects the fields in the Send tab')+' '
