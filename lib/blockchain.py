@@ -199,7 +199,7 @@ class Blockchain(util.PrintError):
             chain.append(header)
 
             if height > LCC_LAST_SCRYPT_BLOCK:
-                target = self.get_target(height, chain)
+                target = self.get_target_lcc(height, chain)
 
             self.verify_header(header, prev_hash, target)
             prev_hash = hash_header(header)
@@ -320,23 +320,21 @@ class Blockchain(util.PrintError):
 
         """ Get the difficulty target for a block for Litecoin Cash. Inspired by DGW in electrum-dash. """
 
+        if chain is None:
+            chain = []
+
         if constants.net.TESTNET:
             return 0
 
         chunk_index = height // 2016
-
         if chunk_index == -1:
             return 0x00000FFFF0000000000000000000000000000000000000000000000000000000
 
-        if chunk_index < len(self.checkpoints):
-            h, t, _ = self.checkpoints[chunk_index]
-            return t
-
         if height <= LCC_LAST_SCRYPT_BLOCK:
+            if chunk_index < len(self.checkpoints):
+                h, t, _ = self.checkpoints[chunk_index]
+                return t
             return self.get_target_ltc(chunk_index)
-
-        if chain is None:
-            chain = []
 
         return self.get_target_lcc(height, chain)
 
@@ -346,19 +344,20 @@ class Blockchain(util.PrintError):
 
         def header_from_chain(block_height):
             header = self.read_header(block_height)
-            if header is None:
-                for hdr in chain:
-                    if hdr.get('block_height') == block_height:
-                        header = hdr
-            return header
+            if header is not None:
+                return header
+            for hdr in chain:
+                if hdr.get('block_height') == block_height:
+                    return hdr
 
         assert height > LCC_LAST_SCRYPT_BLOCK, "Using dark gravity before fork block"
 
         last = header_from_chain(height - 1)
-        end_time = last.get('timestamp')
 
         if last is None or height - LCC_LAST_SCRYPT_BLOCK < LCC_DGW_PAST_BLOCKS:
             return LCC_MIN_POW
+
+        end_time = last.get('timestamp')
 
         for count in [i+1 for i in range(LCC_DGW_PAST_BLOCKS)]:
             if count <= LCC_DGW_PAST_BLOCKS:
@@ -454,7 +453,7 @@ class Blockchain(util.PrintError):
     def get_checkpoints(self):
         # for each chunk, store the hash of the last block and the target after the chunk
         cp = []
-        n = self.height() // 2016
+        n = LCC_LAST_SCRYPT_BLOCK // 2016
         for index in range(n):
             h = self.get_hash((index+1) * 2016 -1)
             target = self.get_target(index * 2016)
