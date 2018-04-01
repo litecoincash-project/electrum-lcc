@@ -26,7 +26,7 @@ for repo in electrum-lcc electrum-lcc-locale electrum-lcc-icons; do
 	git checkout master
 	cd ..
     else
-	URL=https://github.com/pooler/$repo.git
+	URL=https://github.com/litecoincash-project/$repo.git
 	git clone -b master $URL $repo
     fi
 done
