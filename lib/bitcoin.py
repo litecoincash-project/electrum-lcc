@@ -42,7 +42,7 @@ from . import constants
 ################################## transactions
 COIN_SCALE = 10
 COINBASE_MATURITY = 100
-COIN = 100000000 / COIN_SCALE
+COIN = 100000000 // COIN_SCALE
 
 
 # supported types of transaction outputs
