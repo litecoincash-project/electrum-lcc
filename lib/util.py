@@ -505,8 +505,8 @@ mainnet_block_explorers = {
 }
 
 testnet_block_explorers = {
-    'system default': ('blockchain://4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0/',
-                       {'tx': 'tx/', 'addr': 'address/'}),
+    'explorer.litecoinca.sh': ('http://explorer.litecoinca.sh/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
 }
 
 def block_explorer_info():
@@ -514,7 +514,7 @@ def block_explorer_info():
     return testnet_block_explorers if constants.net.TESTNET else mainnet_block_explorers
 
 def block_explorer(config):
-    return config.get('block_explorer', 'LiteCore')
+    return config.get('block_explorer', 'explorer.litecoinca.sh')
 
 def block_explorer_tuple(config):
     return block_explorer_info().get(block_explorer(config))
