@@ -115,6 +115,15 @@ class ExchangeBase(PrintError):
         return sorted([str(a) for (a, b) in rates.items() if b is not None and len(a)==3])
 
 
+class LitecoinCashPrice(ExchangeBase):
+
+    def get_rates(self, ccy):
+        json = self.get_json("litecoinca.sh", "/api/rates/exchange")
+        return {entry['code']: Decimal(entry['n']) for entry in json}
+
+
+'''
+
 class BitcoinAverage(ExchangeBase):
 
     def get_rates(self, ccy):
@@ -134,7 +143,6 @@ class BitcoinAverage(ExchangeBase):
                      for h in history])
 
 
-'''
 class Bit2C(ExchangeBase):
 
     def get_rates(self, ccy):
@@ -388,7 +396,7 @@ class FxThread(ThreadJob):
         return self.config.get("currency", "EUR")
 
     def config_exchange(self):
-        return self.config.get('use_exchange', 'BitcoinAverage')
+        return self.config.get('use_exchange', 'LitecoinCashPrice')
 
     def show_history(self):
         return self.is_enabled() and self.get_history_config() and self.ccy in self.exchange.history_ccys()
@@ -400,7 +408,7 @@ class FxThread(ThreadJob):
         self.on_quotes()
 
     def set_exchange(self, name):
-        class_ = globals().get(name, BitcoinAverage)
+        class_ = globals().get(name, LitecoinCashPrice)
         self.print_error("using exchange", name)
         if self.config_exchange() != name:
             self.config.set_key('use_exchange', name, True)
@@ -436,7 +444,7 @@ class FxThread(ThreadJob):
     def get_fiat_status_text(self, btc_balance, base_unit, decimal_point):
         rate = self.exchange_rate()
         return _("  (No FX rate available)") if rate.is_nan() else " 1 %s~%s %s" % (base_unit,
-            self.value_str(COIN / (10**(8 - decimal_point)), rate), self.ccy)
+            self.value_str(COIN / (10**(7 - decimal_point)), rate), self.ccy)
 
     def fiat_value(self, satoshis, rate):
         return Decimal('NaN') if satoshis is None else Decimal(satoshis) / COIN * Decimal(rate)
