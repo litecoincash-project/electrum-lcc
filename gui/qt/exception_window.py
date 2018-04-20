@@ -53,7 +53,7 @@ issue_template = """<h2>Traceback</h2>
   <li>Locale: {locale}</li>
 </ul>
 """
-report_server = "https://crashhub.electrum-lcc.org/crash"
+report_server = "https://crashhub-electrum.litecoinca.sh"
 report_enabled = False
 
 
