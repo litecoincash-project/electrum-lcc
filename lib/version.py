@@ -1,3 +1,4 @@
+GIT_COMMIT = "c5d79d"
 ELECTRUM_VERSION = '3.1.2.1' # version of the client package
 PROTOCOL_VERSION = '1.2'     # protocol version requested
 
