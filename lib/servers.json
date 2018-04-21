@@ -1,12 +1,12 @@
 {
-    "174.138.11.69": {
+    "electrum1.litecoinca.sh": {
         "pruning": "-",
         "s": "50010",
         "t": "50001",
         "version": "1.2"
     },
 
-    "45.76.135.93": {
+    "electrum2.litecoinca.sh": {
         "pruning": "-",
         "s": "50010",
         "t": "50001",
