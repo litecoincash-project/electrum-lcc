@@ -58,6 +58,10 @@ def serialize_header(res):
     return s
 
 def deserialize_header(s, height):
+    if not s:
+        raise Exception('Invalid header: {}'.format(s))
+    if len(s) != 80:
+        raise Exception('Invalid header length: {}'.format(len(s)))
     hex_to_int = lambda s: int('0x' + bh2u(s[::-1]), 16)
     h = {}
     h['version'] = hex_to_int(s[0:4])
@@ -174,14 +178,14 @@ class Blockchain(util.PrintError):
         # _hash = hash_header(header)
         _hash = pow_hash_header(header)
         if prev_hash != header.get('prev_block_hash'):
-            raise BaseException("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
+            raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if constants.net.TESTNET:
             return
         bits = self.target_to_bits(target)
         if bits != header.get('bits'):
-            raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))
+            raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
         if int('0x' + _hash, 16) > target:
-            raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
+            raise Exception("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
     def verify_chunk(self, index, data):
         chain = []
@@ -288,6 +292,8 @@ class Blockchain(util.PrintError):
             with open(name, 'rb') as f:
                 f.seek(delta * 80)
                 h = f.read(80)
+                if len(h) < 80:
+                    raise Exception('Expected to read a full header. This was only {} bytes'.format(len(h)))
         elif not os.path.exists(util.get_headers_dir(self.config)):
             raise Exception('Electrum datadir does not exist. Was it deleted while running?')
         else:
@@ -400,10 +406,10 @@ class Blockchain(util.PrintError):
     def bits_to_target(self, bits):
         bitsN = (bits >> 24) & 0xff
         if not (bitsN >= 0x03 and bitsN <= 0x1e):
-            raise BaseException("First part of bits should be in [0x03, 0x1e]")
+            raise Exception("First part of bits should be in [0x03, 0x1e]")
         bitsBase = bits & 0xffffff
         if not (bitsBase >= 0x8000 and bitsBase <= 0x7fffff):
-            raise BaseException("Second part of bits should be in [0x8000, 0x7fffff]")
+            raise Exception("Second part of bits should be in [0x8000, 0x7fffff]")
         return bitsBase << (8 * (bitsN-3))
 
     def target_to_bits(self, target):
@@ -450,7 +456,7 @@ class Blockchain(util.PrintError):
             return True
         except BaseException as e:
             self.print_error('verify_chunk %d failed'%idx, str(e))
-            raise
+            return False
 
     def get_checkpoints(self):
         # for each chunk, store the hash of the last block and the target after the chunk

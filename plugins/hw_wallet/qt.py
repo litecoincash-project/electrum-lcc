@@ -34,7 +34,7 @@ from electrum_lcc.i18n import _
 from electrum_lcc.util import PrintError
 
 # The trickiest thing about this handler was getting windows properly
-# parented on MacOSX.
+# parented on macOS.
 class QtHandlerBase(QObject, PrintError):
     '''An interface between the GUI (here, QT) and the device handling
     logic for handling I/O.'''

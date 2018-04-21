@@ -3,7 +3,7 @@
 
 [Desktop Entry]
 Comment=Lightweight Litecoin Cash Client
-Exec=electrum-lcc %u
+Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\" electrum-lcc %u"
 GenericName[en_US]=Litecoin Cash Wallet
 GenericName=Litecoin Cash Wallet
 Icon=electrum-lcc
@@ -17,5 +17,5 @@ MimeType=x-scheme-handler/litecoincash;
 Actions=Testnet;
 
 [Desktop Action Testnet]
-Exec=electrum-lcc --testnet %u
+Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\" electrum-lcc --testnet %u"
 Name=Testnet mode

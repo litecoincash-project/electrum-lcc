@@ -86,7 +86,7 @@ class BTCAmountEdit(AmountEdit):
         if p == 4:
             return 'mLCC'
         if p == 1:
-            return 'bits'
+            return 'uLCC'
         raise Exception('Unknown base unit')
 
     def get_amount(self):

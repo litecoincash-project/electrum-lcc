@@ -1,5 +1,3 @@
-import threading
-
 from binascii import hexlify, unhexlify
 
 from electrum_lcc.util import bfh, bh2u, versiontuple
@@ -8,7 +6,7 @@ from electrum_lcc.bitcoin import (b58_address_to_hash160, xpub_from_pubkey,
 from electrum_lcc import constants
 from electrum_lcc.i18n import _
 from electrum_lcc.plugins import BasePlugin, Device
-from electrum_lcc.transaction import deserialize
+from electrum_lcc.transaction import deserialize, Transaction
 from electrum_lcc.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey
 
 from ..hw_wallet import HW_PluginBase
@@ -65,6 +63,8 @@ class TrezorKeyStore(Hardware_KeyStore):
         for txin in tx.inputs():
             pubkeys, x_pubkeys = tx.get_sorted_pubkeys(txin)
             tx_hash = txin['prevout_hash']
+            if txin.get('prev_tx') is None and not Transaction.is_segwit_input(txin):
+                raise Exception(_('Offline signing with {} is not supported for legacy inputs.').format(self.device))
             prev_tx[tx_hash] = txin['prev_tx']
             for x_pubkey in x_pubkeys:
                 if not is_xpubkey(x_pubkey):
@@ -93,7 +93,6 @@ class TrezorPlugin(HW_PluginBase):
 
     def __init__(self, parent, config, name):
         HW_PluginBase.__init__(self, parent, config, name)
-        self.main_thread = threading.current_thread()
 
         try:
             # Minimal test if python-trezor is installed
@@ -480,7 +479,7 @@ class TrezorPlugin(HW_PluginBase):
             o.script_pubkey = bfh(vout['scriptPubKey'])
         return t
 
-    # This function is called from the trezor libraries (via tx_api)
+    # This function is called from the TREZOR libraries (via tx_api)
     def get_tx(self, tx_hash):
         tx = self.prev_tx[tx_hash]
         return self.electrum_tx_to_txtype(tx)

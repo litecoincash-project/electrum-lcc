@@ -348,7 +348,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         if not result and raise_on_cancel:
             raise UserCancelled
         if result == 1:
-            raise GoBack
+            raise GoBack from None
         self.title.setVisible(False)
         self.back_button.setEnabled(False)
         self.next_button.setEnabled(False)
@@ -441,7 +441,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
 
     def show_restore(self, wallet, network):
         # FIXME: these messages are shown after the install wizard is
-        # finished and the window closed.  On MacOSX they appear parented
+        # finished and the window closed.  On macOS they appear parented
         # with a re-appeared ghost install wizard window...
         if network:
             def task():
