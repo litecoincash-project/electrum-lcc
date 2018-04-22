@@ -137,7 +137,7 @@ class SeedLayout(QVBoxLayout):
 
     def initialize_completer(self):
         english_list = Mnemonic('en').wordlist
-        old_list = electrum_ltc.old_mnemonic.words
+        old_list = electrum_lcc.old_mnemonic.words
         self.wordlist = english_list + list(set(old_list) - set(english_list)) #concat both lists
         self.wordlist.sort()
         self.completer = QCompleter(self.wordlist)
