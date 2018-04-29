@@ -709,7 +709,7 @@ is_bip32_key = lambda x: is_xprv(x) or is_xpub(x)
 
 
 def bip44_derivation(account_id, bip43_purpose=44):
-    coin = 1 if constants.net.TESTNET else 2
+    coin = 1 if constants.net.TESTNET else 192
     return "m/%d'/%d'/%d'" % (bip43_purpose, coin, int(account_id))
 
 def from_seed(seed, passphrase, is_p2sh):
