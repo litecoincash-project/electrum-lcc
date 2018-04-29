@@ -71,7 +71,7 @@ class BitcoinTestnet:
     WIF_PREFIX = 0xbf
     ADDRTYPE_P2PKH = 43
     ADDRTYPE_P2SH = 58
-    SEGWIT_HRP = "tltc"
+    SEGWIT_HRP = "tlcc"
     GENESIS = "4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0"
     DEFAULT_PORTS = {'t': '51001', 's': '51002'}
     DEFAULT_SERVERS = read_json('servers_testnet.json', {})
@@ -95,7 +95,7 @@ class BitcoinTestnet:
 
 class BitcoinRegtest(BitcoinTestnet):
 
-    SEGWIT_HRP = "rltc"
+    SEGWIT_HRP = "rlcc"
     GENESIS = "530827f38f93b43ed12af0b3ad25a288dc02ed74d6d7857862df51fc56c416f9"
     DEFAULT_SERVERS = read_json('servers_regtest.json', {})
     CHECKPOINTS = []
