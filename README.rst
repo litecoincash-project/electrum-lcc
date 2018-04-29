@@ -5,7 +5,7 @@ Electrum-LCC - Lightweight Litecoin Cash client
 
   Licence: MIT Licence
   Original Author: Thomas Voegtlin
-  Port Maintainer: Pooler
+  Port Maintainer: Loxley
   Language: Python
   Homepage: https://github.com/litecoincash-project/electrum-lcc
 
