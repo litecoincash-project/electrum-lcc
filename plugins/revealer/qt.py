@@ -164,12 +164,14 @@ class Plugin(BasePlugin):
     def bcrypt(self, dialog):
         self.rawnoise = False
         dialog.show_message(''.join([_("{} encrypted for Revealer {}_{} saved as PNG and PDF at:").format(self.was, self.version, self.code_id),
-                                     "<br/>","<b>", self.base_dir+ self.filename+self.version+"_"+self.code_id,"</b>"]))
+                                     "<br/>","<b>", self.base_dir+ self.filename+self.version+"_"+self.code_id,"</b>"]),
+                            rich_text=True)
         dialog.close()
 
     def bdone(self, dialog):
         dialog.show_message(''.join([_("Digital Revealer ({}_{}) saved as PNG and PDF at:").format(self.version, self.code_id),
-                                     "<br/>","<b>", self.base_dir + 'revealer_' +self.version + '_'+ self.code_id, '</b>']))
+                                     "<br/>","<b>", self.base_dir + 'revealer_' +self.version + '_'+ self.code_id, '</b>']),
+                            rich_text=True)
 
 
     def customtxt_limits(self):
