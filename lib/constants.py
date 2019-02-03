@@ -49,6 +49,9 @@ class BitcoinMainnet:
     DEFAULT_SERVERS = read_json('servers.json', {})
     CHECKPOINTS = read_json('checkpoints.json', [])
 
+    MIN_HIVE_CHECK_BLOCK = 1537566
+    HIVE_NONCE_MARKER = 192
+
     XPRV_HEADERS = {
         'standard':    0x0488ade4,  # xprv
         'p2wpkh-p2sh': 0x049d7878,  # yprv

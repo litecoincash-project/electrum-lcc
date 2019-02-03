@@ -174,13 +174,26 @@ class Blockchain(util.PrintError):
         p = self.path()
         self._size = os.path.getsize(p)//80 if os.path.exists(p) else 0
 
+    def hive_header(self, header):
+        return (header['block_height'] > constants.net.MIN_HIVE_CHECK_BLOCK and
+                header['nonce'] == constants.net.HIVE_NONCE_MARKER)
+
     def verify_header(self, header, prev_hash, target):
         # _hash = hash_header(header)
         _hash = pow_hash_header(header)
         if prev_hash != header.get('prev_block_hash'):
             raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
+
         if constants.net.TESTNET:
             return
+
+        if self.hive_header(header):
+            prev_header = self.read_header(header['block_height'] - 1)
+            if prev_header is not None and self.hive_header(prev_header):
+                raise Exception("Hive block must follow POW block")
+            else:
+                return
+
         bits = self.target_to_bits(target)
         if bits != header.get('bits'):
             raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
@@ -366,6 +379,10 @@ class Blockchain(util.PrintError):
         end_time = last.get('timestamp')
 
         for count in [i+1 for i in range(LCC_DGW_PAST_BLOCKS)]:
+            # Skip hive blocks in difficulty calc
+            while self.hive_header(last):
+                last = header_from_chain(last['block_height'] - 1)
+
             if count <= LCC_DGW_PAST_BLOCKS:
                 target = self.bits_to_target(last.get('bits'))
                 if count == 1:
@@ -374,7 +391,7 @@ class Blockchain(util.PrintError):
                     past_target_average = ((past_target_average * count) + target) // (count + 1)
 
             if count != LCC_DGW_PAST_BLOCKS:
-                last = header_from_chain((height - 1) - count)
+                last = header_from_chain(last['block_height'] - 1)
 
         time_span = end_time - last.get('timestamp')
         target_timespan = LCC_DGW_PAST_BLOCKS * LCC_DGW_TARGET_SPACING
