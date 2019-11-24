@@ -188,9 +188,14 @@ class Blockchain(util.PrintError):
             return
 
         if self.hive_header(header):
-            prev_header = self.read_header(header['block_height'] - 1)
-            if prev_header is not None and self.hive_header(prev_header):
-                raise Exception("Hive block must follow POW block")
+            num_previous_hive_headers = 0
+            while True:
+                prev_header = self.read_header(header['block_height'] - (num_previous_hive_headers + 1))
+                if prev_header is None or not self.hive_header(prev_header):
+                    break
+                num_previous_hive_headers += 1
+            if num_previous_hive_headers > 1:
+                raise Exception("Only Two Hive blocks allowed between PoW Blocks")
             else:
                 return
 
@@ -372,6 +377,8 @@ class Blockchain(util.PrintError):
         assert height > LCC_LAST_SCRYPT_BLOCK, "Using dark gravity before fork block"
 
         last = header_from_chain(height - 1)
+        while self.hive_header(last):
+            last = header_from_chain(last['block_height'] - 1)
 
         if last is None or height - LCC_LAST_SCRYPT_BLOCK < LCC_DGW_PAST_BLOCKS:
             return LCC_MIN_POW
