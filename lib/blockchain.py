@@ -36,6 +36,7 @@ except ImportError:
     from .scrypt import scrypt_1024_1_1_80 as scrypt_pow_hash
 
 LCC_LAST_SCRYPT_BLOCK = 1371111     # Litecoin Cash: Fork block
+LCC_HIVE11_ACTIVATION = 1766016     # Litecoin Cash: Hive11 Activation block
 LCC_MIN_POW = 0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 LCC_DGW_TARGET_SPACING = int(2.5 * 60)   # Litecoin Cash: Target difficulty adjust spacing for dark gravity
 LCC_DGW_PAST_BLOCKS = 24
@@ -201,7 +202,7 @@ class Blockchain(util.PrintError):
 
         bits = self.target_to_bits(target)
         if bits != header.get('bits'):
-            raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
+            raise Exception("bits mismatch: %s vs %s (target: %s)" % (bits, header.get('bits'), target))
         if int('0x' + _hash, 16) > target:
             raise Exception("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
@@ -377,8 +378,9 @@ class Blockchain(util.PrintError):
         assert height > LCC_LAST_SCRYPT_BLOCK, "Using dark gravity before fork block"
 
         last = header_from_chain(height - 1)
-        while self.hive_header(last):
-            last = header_from_chain(last['block_height'] - 1)
+        if last['block_height'] >= LCC_HIVE11_ACTIVATION:
+            while self.hive_header(last):
+                last = header_from_chain(last['block_height'] - 1)
 
         if last is None or height - LCC_LAST_SCRYPT_BLOCK < LCC_DGW_PAST_BLOCKS:
             return LCC_MIN_POW
@@ -475,7 +477,6 @@ class Blockchain(util.PrintError):
         try:
             data = bfh(hexdata)
             self.verify_chunk(idx, data)
-            #self.print_error("validated chunk %d" % idx)
             self.save_chunk(idx, data)
             return True
         except BaseException as e:
