@@ -202,7 +202,7 @@ class Blockchain(util.PrintError):
 
         bits = self.target_to_bits(target)
         if bits != header.get('bits'):
-            raise Exception("bits mismatch: %s vs %s (target: %s)" % (bits, header.get('bits'), target))
+            raise Exception("bits mismatch: %s vs %s (target: %s)" % (hex(bits), hex(header.get('bits')), target))
         if int('0x' + _hash, 16) > target:
             raise Exception("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
